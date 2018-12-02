@@ -6,6 +6,11 @@ int main()
 {
 	int retry;
 
+	if ((checkfiles()) == 1)
+	{
+		printf("Error!\n");
+		system("pause");
+	}
 	do
 	{
 		system("cls");
@@ -23,6 +28,7 @@ int main()
 		case 2:
 		{
 			printf("Goodbye, i'll miss you...\n");
+			deltrash();
 			return 0;
 		}
 		default:
@@ -33,7 +39,7 @@ int main()
 		}
 		}
 	} while (retry != 2);
-
+	deltrash();
 	return 0;
 }
 int choosemode()
@@ -44,11 +50,10 @@ int choosemode()
 	do
 	{
 		system("cls");
-		printf("Choose Mode: \n1 - Add to base\n2 - Read from base\n3 - Exit\nEnter mode code: ");
+		printf("Choose Mode: \n1 - Add to base\n2 - Read from base\n3 - Recreate Base\n4 - Delete Base\n5 - Exit\nEnter mode code: ");
 		mode = getchar() - '0';
 		scanf("%*[^\n]%*c");
 		getchar();
-		printf("mode = %d\n", mode);
 		switch (mode)
 		{
 		case 1:
@@ -63,6 +68,16 @@ int choosemode()
 		}
 		case 3:
 		{
+			SysMenu();
+			break;
+		}
+		case 4:
+		{
+			DelBase();
+			break;
+		}
+		case 5:
+		{
 			system("cls");
 			return 0;
 		}
@@ -73,7 +88,8 @@ int choosemode()
 			break;
 		}
 		}
-	} while (mode != 3);
+	} while (mode != 5);
+	return 0;
 }
 int entinbase ()
 {
@@ -129,29 +145,35 @@ int entinbase ()
 		while ((date.code < 1) || (date.code > 4))
 		{
 			system("cls");
-			printf("Invalid Format. Please, retry. \nChoose the type or exit:\n 1 - Birthday\n 2 - Hollyday\n3 - Important Day\nEnter the code or exit. For exit enter 4: ");
+			printf("Invalid Format. Please, retry. \nChoose the type or exit:\n1 - Birthday\n2 - Hollyday\n3 - Important Day\nEnter the code or exit. For exit enter 4: ");
 			scanf("%d", &date.code);
 			getchar();
 		}
 		system("cls");
 		if (date.code == 4)
 			return 0;
+		printf("Enter the name or exit. For exit enter 1: ");
+		fgets(s1, 100, stdin);
+		if (s1[0] == '1')
+		{
+			fclose(f1);
+			fclose(f2);
+			fclose(cfg);
+			return 0;
+		}
 		N = (date.month * 1000) + (date.day * 10) + date.code;
 		res = testnalimit(0, 0, N, Limit);
 	}
 	if (N > Limit)
 		changecfg(cfg, N);
-	printf("Enter the name or exit. For exit enter 1: ");
-	getchar();
-	fgets(s1, 100, stdin);
-	if (s1[0] == '1')
-		return 0;
+	
 	fscanf(cfg, "Limit: %d\n", &Limit);
 
 	vvodid(f1, f2, 0, Limit, 0, N, s1);
 
 	fclose(f1);
 	fclose(f2);
+	fclose(cfg);
 	remove("file.txt");
 	rename("file1.txt", "file.txt");
 	system("cls");
@@ -161,6 +183,17 @@ int entinbase ()
 int vvodid(FILE *f1, FILE *f2, int i, int Limit, int previousI, long int N, char s1[1000])
 {
 	char s[100];
+	int chislo[5];
+	int krat;
+	char type[100];
+	int j;
+	struct date
+	{
+		int month;
+		int day;
+		int code;
+	} date;
+
 	do
 	{
 		fscanf(f1, "%d ", &i);
@@ -177,7 +210,44 @@ int vvodid(FILE *f1, FILE *f2, int i, int Limit, int previousI, long int N, char
 		fseek(f1, 0, SEEK_END);
 		fprintf(f2, "%d %s", N, s1);
 	}
+
+	krat = 10000;
+	i = 0;
+	for (j = 0; j != 5; j++)
+	{
+		chislo[i] = N / krat;
+		N = N - chislo[i] * krat;
+		krat = krat / 10;
+		i++;
+	}
+
+	date.month = chislo[0] * 10 + chislo[1];
+	date.day = chislo[2] * 10 + chislo[3];
+	date.code = chislo[4];
+
+	switch (date.code)
+	{
+	case 1:
+	{
+		strcpy(type, "Birthday");
+		break;
+	}
+	case 2:
+	{
+		strcpy(type, "Hollyday");
+		break;
+	}
+	case 3:
+	{
+		strcpy(type, "Important Day");
+		break;
+	}
+	}
+	system("cls");
+	printf("New Event added: %d.%d - %s - %s\n", date.day, date.month, type, s1);
+	system("pause");
 	return 0;
+
 }
 int testnalimit(int PreviousI, int i, long int N, int Limit)
 {
@@ -281,14 +351,15 @@ int readmonth()
 
 	struct dates date[33];
 	struct founded found[33];
-	int N, resN, i, j, k, cont, month;
+	int N, resN, i, j, k,q, cont, month;
 	long int g;
 	int chislo[5];
 	int krat;
 	char str[100];
 
+	q = 0;
 	f1 = fopen("file.txt", "r+");
-
+	system("cls");
 	printf("Enter the month or exit. For exit enter 13: ");
 	scanf("%d", &month);
 	while ((month < 1) || (month > 13))
@@ -319,11 +390,12 @@ int readmonth()
 			found[j].trig = 1;
 			j++;
 			i = g;
+			q++;
 		}
 		
 	}
 	fclose(f1);
-	if (found[0].number == 0)
+	if (q == 0)
 	{
 		printf("Information not found. Please touch any key to exit and retry\n ");
 		system("pause");
@@ -389,6 +461,7 @@ int readonedate()
 	f1 = fopen("file.txt", "r+");
 	cfg = fopen("cfg.txt", "r+");
 	fscanf(cfg, "Limit: %d\n", &Limit);
+	system("cls");
 	printf("Enter the month or exit. For exit enter 13: ");
 	scanf("%d", &date.month);
 	while ((date.month < 1) || (date.month > 13))
@@ -434,6 +507,7 @@ int readonedate()
 	{
 		printf("Information not found. Please touch any key to exit and retry\n ");
 		system("pause");
+		getchar();
 		return 0;
 	}
 	krat = 10000;
@@ -473,7 +547,6 @@ int readonedate()
 	system("cls");
 	printf("Information was found\n");
 	printf("%d.%d - %s - %s\n", date.day, date.month, type, str);
-
 	delored(resN, date.day, date.month, type, str);
 	return 0;
 }
@@ -482,14 +555,15 @@ int delored(long int resN, int day, int month, char type[100], char str[100])
 	int mode, N;
 	mode = 0;
 	N = resN;	
-	printf("What do you want to do?\n 1 - Delete this event\n2 - Edit this event\n3 - Exit\n Choose action: ");
+	printf("What do you want to do?\n1 - Delete this event\n2 - Edit this event\n3 - Exit\nChoose action: ");
 	scanf("%d", &mode);
 	while ((mode < 1) || (mode > 3))
 	{
 		system("cls");
-		printf("Invalid Format. Please, retry. \n What do you want to do?\n 1 - Delete this event\n 2 - Edit this event\n 3 - Exit\n Choose action: ");
+		printf("Invalid Format. Please, retry. \n What do you want to do?\n1 - Delete this event\n2 - Edit this event\n3 - Exit\nChoose action: ");
 		scanf("%d", &mode);
 	}
+	getchar();
 	switch (mode)
 	{
 	case 1:
@@ -635,7 +709,7 @@ int newstroke(char s1[100], long int dateN)
 		while ((date.code < 1) || (date.code > 4))
 		{
 			system("cls");
-			printf("Invalid Format. Please, retry. \nChoose the type or exit:\n 1 - Birthday\n 2 - Hollyday\n3 - Important Day\nEnter the code or exit. For exit enter 4: ");
+			printf("Invalid Format. Please, retry. \nChoose the type or exit:\n1 - Birthday\n2 - Hollyday\n3 - Important Day\nEnter the code or exit. For exit enter 4: ");
 			scanf("%d", &date.code);
 		}
 		system("cls");
@@ -695,3 +769,209 @@ int rednumb(int PreviousI, int i, long int N, int Limit)
 	rename("listofnumbers1.txt", "listofnumbers.txt");
 	return 1;
 } 
+int checkfiles()
+{
+	FILE *base, *numb, *cfg;
+	int ans;
+	
+	ans = 0;
+
+	if ((base = fopen("file.txt", "r")) == NULL)
+	{
+		printf("Base file of Main Base was broken. PLS, call admin and don't touch anything\n");
+		ans++;
+	}
+
+	if ((numb = fopen("listofnumbers.txt", "r")) == NULL)
+	{
+		printf("Base file of Numbers was broken. PLS, call admin and don't touch anything\n");
+		ans++;
+	}
+
+	if ((cfg = fopen("cfg.txt", "r")) == NULL)
+	{
+		printf("Base file of Config was broken. PLS, call admin and don't touch anything\n");
+		ans++;
+	}
+
+
+	switch (ans)
+	{
+	case 0: 
+	{
+		fclose(cfg);
+		fclose(base);
+		fclose(numb);
+		return 0;
+	}
+	default: return 1;
+	}
+
+	return 1;
+}
+int SysMenu()
+{
+	int retry;
+	retry = 0;
+
+	do
+	{
+		system("cls");
+		printf("Do you want to recreate base?\n1 - Yes\n2 - No\nEnter action code: ");
+		retry = getchar() - '0';
+		scanf("%*[^\n]%*c%");
+		getchar();
+		switch (retry)
+		{
+		case 1:
+		{
+			CreateSys();
+			return 0;
+		}
+		case 2:
+		{
+			printf("Okey, Boss\n");
+			return 1;
+		}
+		default:
+		{
+			printf("Wrong format. Press button to retry\n");
+			getchar();
+			break;
+		}
+		}
+	} while (retry != 2);
+
+}
+int CreateSys()
+{
+	FILE *base, *numb, *cfg;
+	int ans1;
+
+	ans1 = 0;
+
+	if ((base = fopen("file.txt", "w+")) == NULL)
+	{
+		printf("Base file of Main Base was broken. PLS, call admin and don't touch anything\n");
+		ans1++;
+	}
+
+	if ((numb = fopen("listofnumbers.txt", "w+")) == NULL)
+	{
+		printf("Base file of Numbers was broken. PLS, call admin and don't touch anything\n");
+		ans1++;
+	}
+
+	if ((cfg = fopen("cfg.txt", "w+")) == NULL)
+	{
+		printf("Base file of Config was broken. PLS, call admin and don't touch anything\n");
+		ans1++;
+	}
+	system("cls");
+	switch (ans1)
+	{
+	case 0: 
+	{ 
+		printf("Recreation of files was sucsessfull\n");
+		break;
+	}
+	default: 
+	{
+		printf("Recreation was broken. PLS, call admin and don't touch anything \n");
+		return 1;
+	}
+	}
+
+
+	fprintf(base,"0000 debug\n");
+	fprintf(numb, "0000\n");
+	fprintf(cfg, "Limit: 0\n");
+	fclose(cfg);
+	fclose(base);
+	fclose(numb);
+	
+
+	printf("Continue working with base\n");
+	system("pause");
+	return 0;
+}
+int DelBase()
+{
+	int retry;
+	retry = 0;
+
+	do
+	{
+		system("cls");
+		printf("Do you want to delete base?\n1 - Yes\n2 - No\nEnter action code: ");
+		retry = getchar() - '0';
+		scanf("%*[^\n]%*c%");
+		getchar();
+		switch (retry)
+		{
+		case 1:
+		{
+			Delete();
+			return 0;
+		}
+		case 2:
+		{
+			printf("Okey, Boss\n");
+			return 1;
+		}
+		default:
+		{
+			printf("Wrong format. Press button to retry\n");
+			getchar();
+			break;
+		}
+		}
+	} while (retry != 2);
+	return 0;
+}
+int Delete()
+{
+	int ans1;
+	ans1 = 0;
+	if((remove("file.txt"))!=NULL)
+	{
+		printf("Deletement of base file of Main Base was broken. PLS, call admin and don't touch anything\n");
+		ans1++;
+	}
+	if ((remove("cfg.txt")) != NULL)
+	{
+		printf("Deletement of config file of Main Base was broken. PLS, call admin and don't touch anything\n");
+		ans1++;
+	}
+	if ((remove("listofnumbers.txt")) != NULL)
+	{
+		printf("Deletement of numbers file of Main Base was broken. PLS, call admin and don't touch anything\n");
+		ans1++;
+	}
+	system("cls");
+	switch (ans1)
+	{
+	case 0:
+	{
+		printf("Deletement of files was sucsessfull\n");
+		break;
+	}
+	default:
+	{
+		printf("Deletement was broken. PLS, call admin and don't touch anything \n");
+		system("pause");
+		return 1;
+	}
+	}
+
+	printf("TO continue working with base recreate base \n");
+	system("pause");
+	return 0;
+}
+int deltrash()
+{
+	remove("cfg1.txt");
+	remove("file1.txt");
+	remove("listofnumbers1.txt");
+	return 0;
+}
