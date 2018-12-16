@@ -93,7 +93,7 @@ int choosemode()
 }
 int entinbase ()
 {
-	char s1[1000];
+	char s1[100];
 	int res, Limit;
 	long int N;
 	FILE *f1, *f2, *cfg;
@@ -125,7 +125,12 @@ int entinbase ()
 		}
 		system("cls");
 		if (date.month == 13)
+		{
+			fclose(f1);
+			fclose(f2);
+			fclose(cfg);
 			return 0;
+		}
 		printf("Enter the day or exit. For exit enter 32: ");
 		scanf("%d", &date.day);
 		getchar();
@@ -138,7 +143,12 @@ int entinbase ()
 		}
 		system("cls");
 		if (date.day == 32)
+		{
+			fclose(f1);
+			fclose(f2);
+			fclose(cfg);
 			return 0;
+		}
 		printf("Choose the type or exit:\n1 - Birthday\n2 - Hollyday\n3 - Important Day\nEnter the code or exit. For exit enter 4: ");
 		scanf("%d", &date.code);
 		getchar();
@@ -151,7 +161,12 @@ int entinbase ()
 		}
 		system("cls");
 		if (date.code == 4)
+		{
+			fclose(f1);
+			fclose(f2);
+			fclose(cfg);
 			return 0;
+		}
 		printf("Enter the name or exit. For exit enter 1: ");
 		fgets(s1, 100, stdin);
 		if (s1[0] == '1')
