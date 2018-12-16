@@ -367,6 +367,7 @@ int readmonth()
 		system("cls");
 		printf("Invalid Format. Please, retry. \nEnter the month or exit. For exit enter 13: ");
 		scanf("%d", &month);
+		getchar();
 	}
 	system("cls");
 	getchar();
@@ -464,33 +465,39 @@ int readonedate()
 	system("cls");
 	printf("Enter the month or exit. For exit enter 13: ");
 	scanf("%d", &date.month);
+	getchar();
 	while ((date.month < 1) || (date.month > 13))
 	{
 		system("cls");
 		printf("Invalid Format. Please, retry. \nEnter the month or exit. For exit enter 13: ");
 		scanf("%d", &date.month);
+		getchar();
 	}
 	system("cls");
 	if (date.month == 13)
 		return 0;
 	printf("Enter the day or exit. For exit enter 32: ");
 	scanf("%d", &date.day);
+	getchar();
 	while ((date.day < 1) || (date.day > 32))
 	{
 		system("cls");
 		printf("Invalid Format. Please, retry. \nEnter the day or exit. For exit enter 32: ");
 		scanf("%d", &date.day);
+		getchar();
 	}
 	system("cls");
 	if (date.day == 32)
 		return 0;
 	printf("Choose the type or exit:\n1 - Birthday\n2 - Hollyday\n3 - Important Day\nEnter the code or exit. For exit enter 4: ");
 	scanf("%d", &date.code);
+	getchar();
 	while ((date.code < 1) || (date.code > 4))
 	{
 		system("cls");
 		printf("Invalid Format. Please, retry. \nChoose the type or exit:\n1 - Birthday\n2 - Hollyday\n3 - Important Day\nEnter the code or exit. For exit enter 4: ");
 		scanf("%d", &date.code);
+		getchar();
 	}
 	system("cls");
 	if (date.code == 4)
@@ -562,14 +569,21 @@ int delored(long int resN, int day, int month, char type[100], char str[100])
 		system("cls");
 		printf("Invalid Format. Please, retry. \n What do you want to do?\n1 - Delete this event\n2 - Edit this event\n3 - Exit\nChoose action: ");
 		scanf("%d", &mode);
+		getchar();
 	}
 	getchar();
 	switch (mode)
 	{
 	case 1:
+	{
 		delstroke(N);
+		return 0;
+	}
 	case 2:
+	{
 		editstroke(N, day, month, type, str);
+		return 0;
+	}
 	case 3:
 		return 0;
 	}
@@ -600,6 +614,7 @@ int delstroke(long int resN)
 	}
 	fscanf(f1, "%d ", &i);
 	fgets(s, 100, f1);
+
 	if (resN == Limit)
 	{
 		fclose(cfg);
@@ -617,7 +632,8 @@ int delstroke(long int resN)
 		rename("file1.txt", "file.txt");
 		return 0;
 	}
-
+	fprintf(f2, "%d %s", i, s);
+	fprintf(list2, "%d\n", i);
 	do
 	{
 		fscanf(f1, "%d ", &i);
@@ -645,6 +661,7 @@ int editstroke(long int resN, int day, int month, char type[100], char str[100])
 	delstroke(resN);
 	printf("What do you want to edit?\n1 - Date\n2 - Name of date\nChoose action: ");
 	scanf("%d", &mode);
+	getchar();
 	switch (mode)
 	{
 	case 1:
@@ -677,40 +694,45 @@ int newstroke(char s1[100], long int dateN)
 	f2 = fopen("file1.txt", "w+");
 	cfg = fopen("cfg.txt", "r+");
 	fscanf(cfg, "Limit: %d\n", &Limit);
-	fclose(cfg);
 	if (s1 != NULL)
 		strcpy(str, s1);
 	if (dateN == 0)
 	{
 		printf("Enter the month or exit. For exit enter 13: ");
 		scanf("%d", &date.month);
+		getchar();
 		while ((date.month < 1) || (date.month > 13))
 		{
 			system("cls");
 			printf("Invalid Format. Please, retry. \nEnter the month or exit. For exit enter 13: ");
 			scanf("%d", &date.month);
+			getchar();
 		}
 		system("cls");
 		if (date.month == 13)
 			return 0;
 		printf("Enter the day or exit. For exit enter 32: ");
 		scanf("%d", &date.day);
+		getchar();
 		while ((date.day < 1) || (date.day > 32))
 		{
 			system("cls");
 			printf("Invalid Format. Please, retry. \nEnter the day or exit. For exit enter 32: ");
 			scanf("%d", &date.day);
+			getchar();
 		}
 		system("cls");
 		if (date.day == 32)
 			return 0;
 		printf("Choose the type or exit:\n1 - Birthday\n2 - Hollyday\n3 - Important Day\nEnter the code or exit. For exit enter 4: ");
 		scanf("%d", &date.code);
+		getchar();
 		while ((date.code < 1) || (date.code > 4))
 		{
 			system("cls");
 			printf("Invalid Format. Please, retry. \nChoose the type or exit:\n1 - Birthday\n2 - Hollyday\n3 - Important Day\nEnter the code or exit. For exit enter 4: ");
 			scanf("%d", &date.code);
+			getchar();
 		}
 		system("cls");
 		if (date.code == 4)
@@ -720,13 +742,14 @@ int newstroke(char s1[100], long int dateN)
 	if (s1 == NULL)
 	{
 		printf("Enter new name: ");
-		getchar();
 		fgets(str, 100, stdin);
 		N1 = dateN;
 
 	}
 	rednumb(0, 0, N1, Limit);
 	vvodid(f1, f2, 0, Limit, 0, N1, str);
+	if (N1 > Limit)
+		changecfg(cfg, N1);
 	fclose(f1);
 	fclose(f2);
 	remove("file.txt");
