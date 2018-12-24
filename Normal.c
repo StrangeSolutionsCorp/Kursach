@@ -2,6 +2,7 @@
 #include <stdio.h> 
 #include <string.h> 
 #include <stdlib.h>
+#include <math.h>
 int main()
 {
 	int retry;
@@ -317,7 +318,7 @@ int readmode ()
 	do
 	{
 		system("cls");
-		printf("Choose mode:\n1 - One Event\n2 - Whole month\n3 - Exit\nEnter mode code: ");
+		printf("Choose mode:\n1 - One Event\n2 - Whole month\n3 - One category\n4 - Exit\nEnter mode code: ");
 		mode = getchar() - '0';
 		scanf("%*[^\n]%*c");
 		getchar();
@@ -334,6 +335,11 @@ int readmode ()
 			return 0;
 		}
 		case 3:
+		{
+			readcat();
+			return 0;
+		}
+		case 4:
 		{
 			return 0;
 		}
@@ -570,6 +576,120 @@ int readonedate()
 	printf("Information was found\n");
 	printf("%d.%d - %s - %s\n", date.day, date.month, type, str);
 	delored(resN, date.day, date.month, type, str);
+	return 0;
+}
+int readcat()
+{
+	FILE *f1;
+	FILE *cfg;
+	struct dates
+	{
+		int month;
+		int day;
+		int code;
+		char type[100];
+	};
+	struct founded
+	{
+		int trig;
+		long int number;
+		char string[100];
+	};
+
+	struct dates date[33];
+	struct founded found[33];
+	int N, resN, i, j, k, q, cont, code, Limit;
+	long int g;
+	int chislo[5];
+	int krat;
+	char str[100];
+
+	q = 0;
+	f1 = fopen("file.txt", "r+");
+	cfg = fopen("cfg.txt", "r+");
+	cfg = fopen("cfg.txt", "r+");
+	fscanf(cfg, "Limit: %d\n", &Limit);
+	fclose(cfg);
+	system("cls");
+	printf("Enter the category or exit. \n1 - Birhtday\n2 - Hollyday\n3 - Important day\nFor exit enter 4: ");
+	scanf("%d", &code);
+	while ((code < 1) || (code > 4))
+	{
+		system("cls");
+		printf("Invalid Format. Please, retry. \nEnter the category or exit. \n1 - Birhtday\n2 - Hollyday\n3 - Important day\nFor exit enter 4: ");
+		scanf("%d", &code);
+		getchar();
+	}
+	system("cls");
+	getchar();
+	if (code == 4)
+		return 0;
+
+	resN = Limit;
+	i = code;
+	j = 0;
+	do
+	{
+		fscanf(f1, "%d ", &g);
+		fgets(str, 100, f1);
+		found[j].trig = 0;
+		if ((g%10 == code) && (g <= resN))
+		{
+			found[j].number = g;
+			strcpy(found[j].string, str);
+			found[j].trig = 1;
+			j++;
+			i = g;
+			q++;
+		}
+
+	} while ((i < resN) && (feof(f1) == 0));
+	fclose(f1);
+	if (q == 0)
+	{
+		printf("Information not found. Please touch any key to exit and retry\n ");
+		system("pause");
+		return 0;
+	}
+
+	k = 0;
+
+	while (found[k].trig > 0)
+	{
+		krat = 10000;
+		i = 0;
+		for (cont = 0; cont != 5; cont++)
+		{
+			chislo[i] = found[k].number / krat;
+			found[k].number = found[k].number - chislo[i] * krat;
+			krat = krat / 10;
+			i++;
+		}
+		date[k].month = chislo[0] * 10 + chislo[1];
+		date[k].day = chislo[2] * 10 + chislo[3];
+		date[k].code = chislo[4];
+		switch (date[k].code)
+		{
+		case 1:
+		{
+			strcpy(date[k].type, "Birthday");
+			break;
+		}
+		case 2:
+		{
+			strcpy(date[k].type, "Hollyday");
+			break;
+		}
+		case 3:
+		{
+			strcpy(date[k].type, "Important Day");
+			break;
+		}
+		}
+		printf("%d.%d - %s - %s\n", date[k].day, date[k].month, date[k].type, found[k].string);
+		k++;
+	}
+	system("pause");
 	return 0;
 }
 int delored(long int resN, int day, int month, char type[100], char str[100])
