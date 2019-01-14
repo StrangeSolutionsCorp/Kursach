@@ -46,7 +46,6 @@ int main()
 int choosemode()
 {
 	char mode;
-	char s[100];
 
 	do
 	{
@@ -94,7 +93,7 @@ int choosemode()
 }
 int entinbase ()
 {
-	char s1[100];
+	char s1[100], s2[100];
 	int res, Limit;
 	long int N;
 	FILE *f1, *f2, *cfg;
@@ -177,6 +176,16 @@ int entinbase ()
 			fclose(cfg);
 			return 0;
 		}
+		printf("Enter your surname. For exit enter 1: ");
+		scanf("%s", &s2);
+		getchar();
+		if (s2[0] == '1')
+		{
+			fclose(f1);
+			fclose(f2);
+			fclose(cfg);
+			return 0;
+		}
 		N = (date.month * 1000) + (date.day * 10) + date.code;
 		res = testnalimit(0, 0, N, Limit);
 	}
@@ -185,7 +194,7 @@ int entinbase ()
 	
 	fscanf(cfg, "Limit: %d\n", &Limit);
 
-	vvodid(f1, f2, 0, Limit, 0, N, s1);
+	vvodid(f1, f2, 0, Limit, 0, N, s1, s2);
 
 	fclose(f1);
 	fclose(f2);
@@ -196,9 +205,9 @@ int entinbase ()
 
 	return 0;
 }
-int vvodid(FILE *f1, FILE *f2, int i, int Limit, int previousI, long int N, char s1[1000])
+int vvodid(FILE *f1, FILE *f2, int i, int Limit, int previousI, long int N, char s1[100], char s2[100])
 {
-	char s[100];
+	char s[100], s3[100];
 	int chislo[5];
 	int krat;
 	char type[100];
@@ -212,19 +221,19 @@ int vvodid(FILE *f1, FILE *f2, int i, int Limit, int previousI, long int N, char
 
 	do
 	{
-		fscanf(f1, "%d ", &i);
+		fscanf(f1, "%d %s ", &i, &s3);
 		fgets(s, 100, f1);
 		if ((previousI <= N) && (N < i))
 		{
-			fprintf(f2, "%d %s", N, s1);
+			fprintf(f2, "%d %s %s", N, s2, s1);
 		}
-		fprintf(f2, "%d %s", i, s);
+		fprintf(f2, "%d %s %s", i, s3, s);
 		previousI = i;
 	} while (i < Limit);
 	if (N > Limit)
 	{
 		fseek(f1, 0, SEEK_END);
-		fprintf(f2, "%d %s", N, s1);
+		fprintf(f2, "%d %s %s", N, s2, s1);
 	}
 
 	krat = 10000;
@@ -260,7 +269,7 @@ int vvodid(FILE *f1, FILE *f2, int i, int Limit, int previousI, long int N, char
 	}
 	}
 	system("cls");
-	printf("New Event added: %d.%d - %s - %s\n", date.day, date.month, type, s1);
+	printf("New Event added: %d.%d - %s - %sUser: %s\n", date.day, date.month, type, s1, s2);
 	system("pause");
 	return 0;
 
@@ -318,7 +327,7 @@ int readmode ()
 	do
 	{
 		system("cls");
-		printf("Choose mode:\n1 - One Event\n2 - Whole month\n3 - One category\n4 - Exit\nEnter mode code: ");
+		printf("Choose mode:\n1 - One Event\n2 - Whole month\n3 - One category\n4 - One surname\n5 - Exit\nEnter mode code: ");
 		mode = getchar() - '0';
 		scanf("%*[^\n]%*c");
 		getchar();
@@ -341,6 +350,11 @@ int readmode ()
 		}
 		case 4:
 		{
+			readsur();
+			return 0;
+		}
+		case 5:
+		{
 			return 0;
 		}
 		default:
@@ -350,7 +364,7 @@ int readmode ()
 			break;
 		}
 		}
-	} while (mode != 3);
+	} while (mode != 5);
 	
 }
 int readmonth()
@@ -368,6 +382,7 @@ int readmonth()
 		int trig;
 		long int number;
 		char string[100];
+		char sur[100];
 	};
 
 	struct dates date[33];
@@ -376,7 +391,7 @@ int readmonth()
 	long int g;
 	int chislo[5];
 	int krat;
-	char str[100];
+	char str[100],s2[100];
 
 	q = 0;
 	f1 = fopen("file.txt", "r+");
@@ -402,13 +417,14 @@ int readmonth()
 	j = 0;
 	while ((i < resN) && (feof(f1) == 0))
 	{
-		fscanf(f1, "%d ", &g);
+		fscanf(f1, "%d %s", &g, &s2);
 		fgets(str, 100, f1);
 		found[j].trig = 0;
 		if ((g > i) && (g <= resN))
 		{
 			found[j].number = g;
 			strcpy(found[j].string, str);
+			strcpy(found[j].sur, s2);
 			found[j].trig = 1;
 			j++;
 			i = g;
@@ -426,7 +442,7 @@ int readmonth()
 
 	k = 0;
 
-	while (found[k].trig != 0)
+	while (k < q)
 	{
 		krat = 10000;
 		i = 0;
@@ -458,7 +474,7 @@ int readmonth()
 			break;
 		}
 		}
-		printf("%d.%d - %s - %s\n", date[k].day, date[k].month, date[k].type, found[k].string);
+		printf("%d.%d - %s - %sUser: %s\n", date[k].day, date[k].month, date[k].type, found[k].string, found[k].sur);
 		k++;
 	}	 
 	system("pause");
@@ -477,7 +493,7 @@ int readonedate()
 	int reply, N, resN, i, j, Limit;
 	int chislo[5];
 	int krat;
-	char str[100];
+	char str[100], s2[100];
 	char type[100];
 
 	f1 = fopen("file.txt", "r+");
@@ -528,7 +544,7 @@ int readonedate()
 	resN = N;
 	while ((N != i) && (i != Limit))
 	{
-		fscanf(f1, "%d ", &i);
+		fscanf(f1, "%d %s", &i, &s2);
 		fgets(str, 100, f1);
 	}
 	if (i != N)
@@ -574,8 +590,8 @@ int readonedate()
 
 	system("cls");
 	printf("Information was found\n");
-	printf("%d.%d - %s - %s\n", date.day, date.month, type, str);
-	delored(resN, date.day, date.month, type, str);
+	printf("%d.%d - %s - %sUser: %s\n", date.day, date.month, type, str, s2);
+	delored(resN, date.day, date.month, type, str, s2);
 	return 0;
 }
 int readcat()
@@ -594,6 +610,7 @@ int readcat()
 		int trig;
 		long int number;
 		char string[100];
+		char sur[100];
 	};
 
 	struct dates date[33];
@@ -602,7 +619,7 @@ int readcat()
 	long int g;
 	int chislo[5];
 	int krat;
-	char str[100];
+	char str[100], s2[100];
 
 	q = 0;
 	f1 = fopen("file.txt", "r+");
@@ -630,13 +647,14 @@ int readcat()
 	j = 0;
 	do
 	{
-		fscanf(f1, "%d ", &g);
+		fscanf(f1, "%d %s", &g, &s2);
 		fgets(str, 100, f1);
 		found[j].trig = 0;
 		if ((g%10 == code) && (g <= resN))
 		{
 			found[j].number = g;
 			strcpy(found[j].string, str);
+			strcpy(found[j].sur, s2);
 			found[j].trig = 1;
 			j++;
 			i = g;
@@ -686,13 +704,126 @@ int readcat()
 			break;
 		}
 		}
-		printf("%d.%d - %s - %s\n", date[k].day, date[k].month, date[k].type, found[k].string);
+		printf("%d.%d - %s - %sUser: %s\n", date[k].day, date[k].month, date[k].type, found[k].string, found[k].sur);
 		k++;
 	}
 	system("pause");
 	return 0;
 }
-int delored(long int resN, int day, int month, char type[100], char str[100])
+int readsur()
+{
+	FILE *f1;
+	FILE *cfg;
+	struct dates
+	{
+		int month;
+		int day;
+		int code;
+		char type[100];
+	};
+	struct founded
+	{
+		int trig;
+		long int number;
+		char string[100];
+		char sur[100];
+	};
+
+	struct dates date[33];
+	struct founded found[33];
+	int N, resN, i, j, k, q, cont, code, Limit;
+	long int g;
+	int chislo[5];
+	int krat;
+	char str[100], s2[100], s3[100];
+
+	q = 0;
+	f1 = fopen("file.txt", "r+");
+	cfg = fopen("cfg.txt", "r+");
+	cfg = fopen("cfg.txt", "r+");
+	fscanf(cfg, "Limit: %d\n", &Limit);
+	fclose(cfg);
+	system("cls");
+
+	printf("Enter your surname. For exit enter 1: ");
+	scanf("%s", &s3);
+	getchar();
+	if (s2[0] == '1')
+	{
+		fclose(f1);
+		fclose(cfg);
+		return 0;
+	}
+	system("cls");
+	resN = Limit;
+	j = 0;
+	i = 0;
+	do
+	{
+		fscanf(f1, "%d %s", &g, &s2);
+		fgets(str, 100, f1);
+		found[j].trig = 0;
+		if (strcmp(s2, s3) == 0)
+		{
+			found[j].number = g;
+			strcpy(found[j].string, str);
+			strcpy(found[j].sur, s2);
+			found[j].trig = 1;
+			j++;
+			i = g;
+			q++;
+		}
+
+	} while ((i < resN) && (feof(f1) == 0));
+	fclose(f1);
+	if (q == 0)
+	{
+		printf("Information not found. Please touch any key to exit and retry\n ");
+		system("pause");
+		return 0;
+	}
+
+	k = 0;
+
+	while (found[k].trig > 0)
+	{
+		krat = 10000;
+		i = 0;
+		for (cont = 0; cont != 5; cont++)
+		{
+			chislo[i] = found[k].number / krat;
+			found[k].number = found[k].number - chislo[i] * krat;
+			krat = krat / 10;
+			i++;
+		}
+		date[k].month = chislo[0] * 10 + chislo[1];
+		date[k].day = chislo[2] * 10 + chislo[3];
+		date[k].code = chislo[4];
+		switch (date[k].code)
+		{
+		case 1:
+		{
+			strcpy(date[k].type, "Birthday");
+			break;
+		}
+		case 2:
+		{
+			strcpy(date[k].type, "Hollyday");
+			break;
+		}
+		case 3:
+		{
+			strcpy(date[k].type, "Important Day");
+			break;
+		}
+		}
+		printf("%d.%d - %s - %sUser: %s\n", date[k].day, date[k].month, date[k].type, found[k].string, found[k].sur);
+		k++;
+	}
+	system("pause");
+	return 0;
+}
+int delored(long int resN, int day, int month, char type[100], char str[100], char s2[100])
 {
 	int mode, N;
 	mode = 0;
@@ -716,7 +847,7 @@ int delored(long int resN, int day, int month, char type[100], char str[100])
 	}
 	case 2:
 	{
-		editstroke(N, day, month, type, str);
+		editstroke(N, day, month, type, str, s2);
 		return 0;
 	}
 	case 3:
@@ -755,7 +886,7 @@ int delstroke(long int resN)
 		fclose(cfg);
 		cfg = fopen("cfg.txt", "w+");
 		fprintf(cfg, "Limit: %d", lastI);
-		printf("Delete was sucsesful");
+		printf("Delete was sucsesfull\n");
 		fclose(f1);
 		fclose(f2);
 		fclose(cfg);
@@ -788,11 +919,11 @@ int delstroke(long int resN)
 	rename("file1.txt", "file.txt");
 	return 0;
 }
-int editstroke(long int resN, int day, int month, char type[100], char str[100])
+int editstroke(long int resN, int day, int month, char type[100], char str[100], char s2[100])
 {
 	int mode;
 	system("cls");
-	printf("Remember date and Event: %d.%d - %s - %s\n", day, month, type, str);
+	printf("Remember date and Event: %d.%d - %s - %s - %s\n", day, month, type, str, s2);
 	delstroke(resN);
 	printf("What do you want to edit?\n1 - Date\n2 - Name of date\nChoose action: ");
 	scanf("%d", &mode);
@@ -801,18 +932,18 @@ int editstroke(long int resN, int day, int month, char type[100], char str[100])
 	{
 	case 1:
 	{
-		newstroke(str, 0);
+		newstroke(str, s2, 0);
 		break;
 	}
 	case 2:
 	{
-		newstroke(0, resN);
+		newstroke(0, 0, resN);
 		break;
 	}
 	}
 	return 0;
 }
-int newstroke(char s1[100], long int dateN)
+int newstroke(char s1[100], char s2[100], long int dateN)
 {
 	struct date
 	{
@@ -820,7 +951,7 @@ int newstroke(char s1[100], long int dateN)
 		int day;
 		int code;
 	} date;
-	char str[100];
+	char str[100], s3[100];
 	int N, code;
 	int Limit;
 	long int N1;
@@ -830,7 +961,10 @@ int newstroke(char s1[100], long int dateN)
 	cfg = fopen("cfg.txt", "r+");
 	fscanf(cfg, "Limit: %d\n", &Limit);
 	if (s1 != NULL)
+	{
 		strcpy(str, s1);
+		strcpy(s3, s2);
+	}
 	if (dateN == 0)
 	{
 		printf("Enter the month or exit. For exit enter 13: ");
@@ -878,11 +1012,13 @@ int newstroke(char s1[100], long int dateN)
 	{
 		printf("Enter new name: ");
 		fgets(str, 100, stdin);
+		printf("Enter new surname: ");
+		fgets(s3, 100, stdin);
 		N1 = dateN;
 
 	}
 	rednumb(0, 0, N1, Limit);
-	vvodid(f1, f2, 0, Limit, 0, N1, str);
+	vvodid(f1, f2, 0, Limit, 0, N1, str, s3);
 	if (N1 > Limit)
 		changecfg(cfg, N1);
 	fclose(f1);
@@ -1041,7 +1177,7 @@ int CreateSys()
 	}
 
 
-	fprintf(base,"0000 debug\n");
+	fprintf(base,"0000 debug debug\n");
 	fprintf(numb, "0000\n");
 	fprintf(cfg, "Limit: 0\n");
 	fclose(cfg);
